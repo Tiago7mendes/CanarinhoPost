@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Faixa amarela topo do card -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:background="#FFDF00" />
+
+        <ImageView
+            android:id="@+id/imgPost"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Imagem do post" />
+
+        <!-- Rodapé verde escuro com descrição -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/txtDescricao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="#1A1A1A"
+                android:lineSpacingMultiplier="1.5"
+                android:text="Descrição do post" />
+
+            <!-- Linha decorativa verde na base -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="10dp"
+                android:background="#009C3B" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

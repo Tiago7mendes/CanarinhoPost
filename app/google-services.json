@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "695165568246",
+    "project_id": "canarinhonetwork",
+    "storage_bucket": "canarinhonetwork.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:695165568246:android:ea2c46ca0848b58f2498d7",
+        "android_client_info": {
+          "package_name": "com.example.canarinho.redesocial"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0wSkNk9VslqgaK7DJvBtqZmTfvcuOhyI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
