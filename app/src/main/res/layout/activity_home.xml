@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="#F4F4F4">
 
-    <!-- Header verde com perfil -->
+    <!-- Header verde -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="0dp"
@@ -59,24 +59,37 @@
                 android:textColor="#CCFFFFFF" />
         </LinearLayout>
 
+        <!-- Botão novo post -->
+        <ImageButton
+            android:id="@+id/btnNovoPost"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_input_add"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Novo post"
+            android:layout_marginEnd="4dp"
+            app:tint="#FFDF00" />
+
+        <!-- Botão editar perfil -->
         <ImageButton
             android:id="@+id/btnEditarPerfil"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_edit"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Editar perfil" />
+            android:contentDescription="Editar perfil"
+            app:tint="#FFDF00" />
 
     </LinearLayout>
 
-    <!-- Banner amarelo Copa -->
+    <!-- Banner amarelo -->
     <LinearLayout
         android:id="@+id/bannerCopa"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="#FFDF00"
         android:orientation="horizontal"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:paddingVertical="10dp"
         android:paddingHorizontal="16dp"
         app:layout_constraintTop_toBottomOf="@id/header"
@@ -103,7 +116,6 @@
             android:paddingHorizontal="12dp" />
     </LinearLayout>
 
-    <!-- ProgressBar -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -115,7 +127,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"

@@ -62,23 +62,55 @@ class HomeActivity : AppCompatActivity() {
         binding.btnCarregarFeed.setOnClickListener {
             carregarFeed()
         }
+
+        binding.btnNovoPost.setOnClickListener {
+            startActivity(Intent(this, CreatePostActivity::class.java))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Recarrega o feed ao voltar da CreatePostActivity
+        carregarFeed()
     }
 
     private fun carregarFeed() {
         binding.progressBar.visibility = View.VISIBLE
         binding.recyclerView.visibility = View.GONE
 
+        val emailLogado = userAuth.getEmailUsuarioLogado() ?: ""
+
         postDAO.getAll(
             onSuccess = { posts ->
                 binding.progressBar.visibility = View.GONE
                 binding.recyclerView.visibility = View.VISIBLE
-                val adapter = PostAdapter(posts.toTypedArray())
+
+                val adapter = PostAdapter(
+                    posts.toMutableList(),
+                    emailLogado
+                ) { post, position ->
+                    deletarPost(post.id, position)
+                }
+
                 binding.recyclerView.layoutManager = LinearLayoutManager(this)
                 binding.recyclerView.adapter = adapter
             },
             onFailure = { msg ->
                 binding.progressBar.visibility = View.GONE
                 Toast.makeText(this, "Erro ao carregar feed: $msg", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    private fun deletarPost(postId: String, position: Int) {
+        postDAO.delete(postId,
+            onSuccess = {
+                val adapter = binding.recyclerView.adapter as? PostAdapter
+                adapter?.removeItem(position)
+                Toast.makeText(this, "Post removido", Toast.LENGTH_SHORT).show()
+            },
+            onFailure = { msg ->
+                Toast.makeText(this, "Erro ao remover: $msg", Toast.LENGTH_SHORT).show()
             }
         )
     }

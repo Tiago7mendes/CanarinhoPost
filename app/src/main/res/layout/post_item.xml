@@ -15,7 +15,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Faixa amarela topo do card -->
         <View
             android:layout_width="match_parent"
             android:layout_height="4dp"
@@ -28,31 +27,43 @@
             android:scaleType="centerCrop"
             android:contentDescription="Imagem do post" />
 
-        <!-- Rodapé verde escuro com descrição -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:background="#FFFFFF"
-            android:padding="14dp">
+            android:padding="14dp"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/txtDescricao"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:textSize="14sp"
                 android:textColor="#1A1A1A"
                 android:lineSpacingMultiplier="1.5"
                 android:text="Descrição do post" />
 
-            <!-- Linha decorativa verde na base -->
-            <View
-                android:layout_width="40dp"
-                android:layout_height="3dp"
-                android:layout_marginTop="10dp"
-                android:background="#009C3B" />
+            <!-- Botão deletar — visível só para o autor via adapter -->
+            <ImageButton
+                android:id="@+id/btnDeletar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/ic_menu_delete"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Deletar post"
+                android:visibility="gone"
+                app:tint="#E53935" />
 
         </LinearLayout>
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="3dp"
+            android:layout_marginStart="14dp"
+            android:layout_marginBottom="10dp"
+            android:background="#009C3B" />
 
     </LinearLayout>
 
