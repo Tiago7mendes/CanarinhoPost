@@ -45,7 +45,19 @@
                 android:lineSpacingMultiplier="1.5"
                 android:text="Descrição do post" />
 
-            <!-- Botão deletar — visível só para o autor via adapter -->
+            <!-- Botão editar — só aparece para o autor -->
+            <ImageButton
+                android:id="@+id/btnEditar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@android:drawable/ic_menu_edit"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Editar post"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone"
+                app:tint="#009C3B" />
+
+            <!-- Botão deletar — só aparece para o autor -->
             <ImageButton
                 android:id="@+id/btnDeletar"
                 android:layout_width="36dp"

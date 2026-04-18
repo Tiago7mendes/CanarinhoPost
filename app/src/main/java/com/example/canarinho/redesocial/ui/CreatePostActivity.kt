@@ -15,6 +15,9 @@ class CreatePostActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCreatePostBinding
     private lateinit var postDAO: PostDAO
     private val userAuth = UserAuth()
+
+    // Quando não nulo, estamos editando um post existente
+    private var postIdEdicao: String? = null
     private var imagemSelecionada = false
 
     private val galeria = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -31,6 +34,18 @@ class CreatePostActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         postDAO = PostDAO(this)
+
+        // Verifica se veio com dados para edição
+        postIdEdicao = intent.getStringExtra("POST_ID")
+        val descricaoEdicao = intent.getStringExtra("POST_DESCRICAO")
+
+        if (postIdEdicao != null) {
+            binding.btnPublicar.text = "SALVAR EDIÇÃO"
+            binding.btnSelecionarFoto.text = "Trocar foto (opcional)"
+            binding.edtDescricao.setText(descricaoEdicao)
+            imagemSelecionada = true
+        }
+
         setupListeners()
     }
 
@@ -40,12 +55,10 @@ class CreatePostActivity : AppCompatActivity() {
         }
 
         binding.btnPublicar.setOnClickListener {
-            publicarPost()
+            if (postIdEdicao != null) editarPost() else publicarPost()
         }
 
-        binding.btnVoltar.setOnClickListener {
-            finish()
-        }
+        binding.btnVoltar.setOnClickListener { finish() }
     }
 
     private fun publicarPost() {
@@ -53,19 +66,16 @@ class CreatePostActivity : AppCompatActivity() {
         val email = userAuth.getEmailUsuarioLogado() ?: return
 
         if (descricao.isEmpty()) {
-            Toast.makeText(this, "Escreva uma descrição para o post", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Escreva uma descrição", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (!imagemSelecionada) {
-            Toast.makeText(this, "Selecione uma foto para o post", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Selecione uma foto", Toast.LENGTH_SHORT).show()
             return
         }
 
         val imageString = Base64Converter.drawableToString(binding.imgPreview.drawable)
-
-        binding.btnPublicar.isEnabled = false
-        binding.progressBar.visibility = View.VISIBLE
+        setCarregando(true)
 
         postDAO.save(descricao, imageString, email,
             onSuccess = {
@@ -73,10 +83,44 @@ class CreatePostActivity : AppCompatActivity() {
                 finish()
             },
             onFailure = { msg ->
-                binding.btnPublicar.isEnabled = true
-                binding.progressBar.visibility = View.GONE
+                setCarregando(false)
                 Toast.makeText(this, "Erro: $msg", Toast.LENGTH_SHORT).show()
             }
         )
+    }
+
+    private fun editarPost() {
+        val descricao = binding.edtDescricao.text.toString().trim()
+        val id = postIdEdicao ?: return
+
+        if (descricao.isEmpty()) {
+            Toast.makeText(this, "Escreva uma descrição", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Se o usuário trocou a foto usa a nova, senão mantém a original
+        val imageString = if (binding.imgPreview.visibility == View.VISIBLE) {
+            Base64Converter.drawableToString(binding.imgPreview.drawable)
+        } else {
+            intent.getStringExtra("POST_IMAGE_STRING") ?: ""
+        }
+
+        setCarregando(true)
+
+        postDAO.update(id, descricao, imageString,
+            onSuccess = {
+                Toast.makeText(this, "Post atualizado!", Toast.LENGTH_SHORT).show()
+                finish()
+            },
+            onFailure = { msg ->
+                setCarregando(false)
+                Toast.makeText(this, "Erro: $msg", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    private fun setCarregando(carregando: Boolean) {
+        binding.btnPublicar.isEnabled = !carregando
+        binding.progressBar.visibility = if (carregando) View.VISIBLE else View.GONE
     }
 }
