@@ -2,6 +2,7 @@ package br.com.canarinho.redesocial.dao
 
 import android.content.Context
 import br.com.canarinho.redesocial.model.Post
+import br.com.canarinho.redesocial.model.User
 import br.com.canarinho.redesocial.util.Base64Converter
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -12,11 +13,9 @@ class PostDAO(private val context: Context) {
     private val collection = "posts"
     private val limitePorPagina = 5L
 
-    // Cursor da paginação — guarda o Timestamp do último post carregado
-    private var ultimoTimestamp: Timestamp? = null
-    // Controla se ainda há mais posts para carregar
     var temMaisPosts: Boolean = true
         private set
+    private var ultimoTimestamp: Timestamp? = null
 
     fun resetarPaginacao() {
         ultimoTimestamp = null
@@ -31,36 +30,58 @@ class PostDAO(private val context: Context) {
             .orderBy("data", Query.Direction.DESCENDING)
             .limit(limitePorPagina)
 
-        // Se já carregamos alguma página, começa após o último Timestamp
-        ultimoTimestamp?.let {
-            query = query.startAfter(it)
-        }
+        ultimoTimestamp?.let { query = query.startAfter(it) }
 
         query.get()
             .addOnSuccessListener { documentos ->
-                // Se veio menos que o limite, não há mais páginas
                 temMaisPosts = documentos.size() >= limitePorPagina
-
                 if (!documentos.isEmpty) {
-                    // Salva o Timestamp do último documento como cursor
                     ultimoTimestamp = documentos.documents.last().getTimestamp("data")
                 }
 
                 val posts = mutableListOf<Post>()
-                for (document in documentos.documents) {
-                    val id = document.id
-                    val imageString = document.data?.get("imageString")?.toString() ?: ""
-                    val descricao = document.data?.get("descricao")?.toString() ?: ""
-                    val emailAutor = document.data?.get("emailAutor")?.toString() ?: ""
-                    val data = document.getTimestamp("data") ?: Timestamp.now()
-                    val bitmap = try {
-                        Base64Converter.stringToBitmap(imageString)
-                    } catch (e: Exception) {
-                        null
-                    }
-                    posts.add(Post(id, descricao, bitmap, emailAutor, data))
+                val emailsParaBuscar = documentos.documents
+                    .map { it.getString("emailAutor") ?: "" }
+                    .filter { it.isNotEmpty() }
+                    .distinct()
+
+                if (emailsParaBuscar.isEmpty()) {
+                    onSuccess(posts)
+                    return@addOnSuccessListener
                 }
-                onSuccess(posts)
+
+                // Busca os dados dos autores para montar o header do post
+                db.collection("usuarios")
+                    .whereIn("email", emailsParaBuscar)
+                    .get()
+                    .addOnSuccessListener { usuarios ->
+                        val mapaUsuarios = mutableMapOf<String, User>()
+                        for (u in usuarios.documents) {
+                            val user = u.toObject(User::class.java)
+                            if (user != null) mapaUsuarios[user.email] = user
+                        }
+
+                        for (document in documentos.documents) {
+                            val id = document.id
+                            val imageString = document.getString("imageString") ?: ""
+                            val descricao = document.getString("descricao") ?: ""
+                            val emailAutor = document.getString("emailAutor") ?: ""
+                            val data = document.getTimestamp("data") ?: Timestamp.now()
+
+                            val usuario = mapaUsuarios[emailAutor]
+                            val usernameAutor = usuario?.username ?: emailAutor
+                            val fotoAutor = usuario?.fotoPerfil?.let {
+                                try { Base64Converter.stringToBitmap(it) } catch (e: Exception) { null }
+                            }
+                            val bitmap = try {
+                                Base64Converter.stringToBitmap(imageString)
+                            } catch (e: Exception) { null }
+
+                            posts.add(Post(id, descricao, bitmap, emailAutor, usernameAutor, fotoAutor, data))
+                        }
+                        onSuccess(posts)
+                    }
+                    .addOnFailureListener { onFailure(it.message ?: "Erro ao buscar autores") }
             }
             .addOnFailureListener { onFailure(it.message ?: "Erro ao carregar posts") }
     }

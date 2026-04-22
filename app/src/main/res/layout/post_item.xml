@@ -13,43 +13,47 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="#FFFFFF">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:background="#FFDF00" />
-
-        <ImageView
-            android:id="@+id/imgPost"
-            android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Imagem do post" />
-
+        <!-- Header estilo Instagram: foto + username + botões autor -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:background="#FFFFFF"
-            android:padding="14dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:padding="12dp">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/imgFotoAutor"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/empty_profile"
+                    android:contentDescription="Foto do autor" />
+            </androidx.cardview.widget.CardView>
 
             <TextView
-                android:id="@+id/txtDescricao"
+                android:id="@+id/txtUsernameAutor"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginStart="10dp"
                 android:textSize="14sp"
-                android:textColor="#1A1A1A"
-                android:lineSpacingMultiplier="1.5"
-                android:text="Descrição do post" />
+                android:textStyle="bold"
+                android:textColor="#002776"
+                android:text="@username" />
 
-            <!-- Botão editar — só aparece para o autor -->
             <ImageButton
                 android:id="@+id/btnEditar"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:src="@android:drawable/ic_menu_edit"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Editar post"
@@ -57,11 +61,10 @@
                 android:visibility="gone"
                 app:tint="#009C3B" />
 
-            <!-- Botão deletar — só aparece para o autor -->
             <ImageButton
                 android:id="@+id/btnDeletar"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:src="@android:drawable/ic_menu_delete"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Deletar post"
@@ -70,12 +73,51 @@
 
         </LinearLayout>
 
-        <View
-            android:layout_width="40dp"
-            android:layout_height="3dp"
-            android:layout_marginStart="14dp"
-            android:layout_marginBottom="10dp"
-            android:background="#009C3B" />
+        <!-- Imagem do post -->
+        <ImageView
+            android:id="@+id/imgPost"
+            android:layout_width="match_parent"
+            android:layout_height="260dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Imagem do post" />
+
+        <!-- Rodapé: descrição + botão comentar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/txtDescricao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="#1A1A1A"
+                android:lineSpacingMultiplier="1.4"
+                android:text="Descrição do post" />
+
+            <!-- Linha verde decorativa -->
+            <View
+                android:layout_width="40dp"
+                android:layout_height="3dp"
+                android:layout_marginTop="8dp"
+                android:background="#009C3B" />
+
+            <!-- Botão comentar — visível para todos -->
+            <TextView
+                android:id="@+id/btnComentar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💬  Ver comentários"
+                android:textSize="13sp"
+                android:textColor="#009C3B"
+                android:textStyle="bold"
+                android:layout_marginTop="10dp"
+                android:background="?attr/selectableItemBackground"
+                android:padding="4dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

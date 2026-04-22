@@ -3,10 +3,9 @@ package br.com.canarinho.redesocial.model
 import android.graphics.Bitmap
 import com.google.firebase.Timestamp
 
-data class Post(
+data class Comment(
     val id: String = "",
-    val descricao: String = "",
-    val imagem: Bitmap? = null,
+    val texto: String = "",
     val emailAutor: String = "",
     val usernameAutor: String = "",
     val fotoAutor: Bitmap? = null,

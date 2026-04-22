@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RedeSocial">
         <activity
+            android:name="br.com.canarinho.redesocial.ui.CommentsActivity"
+            android:exported="false" />
+        <activity
             android:name="br.com.canarinho.redesocial.ui.CreatePostActivity"
             android:exported="false" />
         <activity

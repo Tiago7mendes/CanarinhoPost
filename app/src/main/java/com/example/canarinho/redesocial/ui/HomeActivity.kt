@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import br.com.canarinho.redesocial.adapter.PostAdapter
 import br.com.canarinho.redesocial.auth.UserAuth
 import br.com.canarinho.redesocial.dao.PostDAO
@@ -13,7 +14,6 @@ import br.com.canarinho.redesocial.dao.UserDAO
 import br.com.canarinho.redesocial.model.Post
 import br.com.canarinho.redesocial.util.Base64Converter
 import com.example.canarinho.redesocial.databinding.ActivityHomeBinding
-import androidx.recyclerview.widget.RecyclerView
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
@@ -43,20 +43,17 @@ class HomeActivity : AppCompatActivity() {
             posts,
             emailLogado,
             onEdit = { post, position -> abrirEdicao(post, position) },
-            onDelete = { post, position -> deletarPost(post.id, position) }
+            onDelete = { post, position -> deletarPost(post.id, position) },
+            onComment = { post -> abrirComentarios(post) }
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
 
-        // Scroll infinito — carrega mais ao chegar no fim
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                val ultimoVisivel = layoutManager.findLastVisibleItemPosition()
-                val total = adapter.itemCount
-
-                if (dy > 0 && ultimoVisivel >= total - 2 && postDAO.temMaisPosts) {
+                val lm = recyclerView.layoutManager as LinearLayoutManager
+                if (dy > 0 && lm.findLastVisibleItemPosition() >= adapter.itemCount - 2 && postDAO.temMaisPosts) {
                     carregarMais()
                 }
             }
@@ -74,11 +71,9 @@ class HomeActivity : AppCompatActivity() {
                     } catch (e: Exception) { }
                     binding.txtUsername.text = "@${it.username}"
                     binding.txtNomeCompleto.text = it.nomeCompleto
-                } ?: Toast.makeText(this, "Perfil não encontrado", Toast.LENGTH_SHORT).show()
+                }
             },
-            onFailure = { msg ->
-                Toast.makeText(this, "Erro: $msg", Toast.LENGTH_SHORT).show()
-            }
+            onFailure = { msg -> Toast.makeText(this, "Erro: $msg", Toast.LENGTH_SHORT).show() }
         )
     }
 
@@ -100,7 +95,6 @@ class HomeActivity : AppCompatActivity() {
         carregarPrimeiraPagina()
     }
 
-    // Reinicia a paginação e carrega do zero
     private fun carregarPrimeiraPagina() {
         postDAO.resetarPaginacao()
         posts.clear()
@@ -110,7 +104,6 @@ class HomeActivity : AppCompatActivity() {
         carregarPagina()
     }
 
-    // Carrega a próxima página sem limpar a lista
     private fun carregarMais() {
         if (!postDAO.temMaisPosts) return
         binding.progressBar.visibility = View.VISIBLE
@@ -135,8 +128,13 @@ class HomeActivity : AppCompatActivity() {
         val intent = Intent(this, CreatePostActivity::class.java).apply {
             putExtra("POST_ID", post.id)
             putExtra("POST_DESCRICAO", post.descricao)
-            // Passa a imageString original para caso o usuário não troque a foto
-            putExtra("POST_IMAGE_STRING", "")
+        }
+        startActivity(intent)
+    }
+
+    private fun abrirComentarios(post: Post) {
+        val intent = Intent(this, CommentsActivity::class.java).apply {
+            putExtra("POST_ID", post.id)
         }
         startActivity(intent)
     }
@@ -148,7 +146,7 @@ class HomeActivity : AppCompatActivity() {
                 Toast.makeText(this, "Post removido", Toast.LENGTH_SHORT).show()
             },
             onFailure = { msg ->
-                Toast.makeText(this, "Erro ao remover: $msg", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Erro: $msg", Toast.LENGTH_SHORT).show()
             }
         )
     }

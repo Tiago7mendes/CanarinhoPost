@@ -11,7 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Header verde -->
         <LinearLayout
             android:id="@+id/header"
             android:layout_width="0dp"
@@ -33,7 +32,9 @@
                 android:contentDescription="Voltar"
                 app:tint="#FFDF00" />
 
+            <!-- ID adicionado aqui -->
             <TextView
+                android:id="@+id/txtTituloTela"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -45,7 +46,6 @@
 
         </LinearLayout>
 
-        <!-- Card do formulário -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardPost"
             android:layout_width="0dp"
@@ -66,7 +66,6 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <!-- Preview da imagem -->
                 <ImageView
                     android:id="@+id/imgPreview"
                     android:layout_width="match_parent"
