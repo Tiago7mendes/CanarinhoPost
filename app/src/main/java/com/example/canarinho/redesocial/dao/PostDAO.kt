@@ -15,17 +15,27 @@ class PostDAO(private val context: Context) {
 
     var temMaisPosts: Boolean = true
         private set
+
+    // Impede que duas requisições rodem ao mesmo tempo
+    var carregando: Boolean = false
+        private set
+
     private var ultimoTimestamp: Timestamp? = null
 
     fun resetarPaginacao() {
         ultimoTimestamp = null
         temMaisPosts = true
+        carregando = false
     }
 
     fun getPaginado(
         onSuccess: (List<Post>) -> Unit,
         onFailure: (String) -> Unit
     ) {
+        // Bloqueia chamadas simultâneas
+        if (carregando) return
+        carregando = true
+
         var query = db.collection(collection)
             .orderBy("data", Query.Direction.DESCENDING)
             .limit(limitePorPagina)
@@ -34,25 +44,26 @@ class PostDAO(private val context: Context) {
 
         query.get()
             .addOnSuccessListener { documentos ->
+                // Se veio menos que o limite, não há mais páginas
                 temMaisPosts = documentos.size() >= limitePorPagina
+
                 if (!documentos.isEmpty) {
                     ultimoTimestamp = documentos.documents.last().getTimestamp("data")
                 }
 
-                val posts = mutableListOf<Post>()
-                val emailsParaBuscar = documentos.documents
+                val emails = documentos.documents
                     .map { it.getString("emailAutor") ?: "" }
                     .filter { it.isNotEmpty() }
                     .distinct()
 
-                if (emailsParaBuscar.isEmpty()) {
-                    onSuccess(posts)
+                if (emails.isEmpty()) {
+                    carregando = false
+                    onSuccess(emptyList())
                     return@addOnSuccessListener
                 }
 
-                // Busca os dados dos autores para montar o header do post
                 db.collection("usuarios")
-                    .whereIn("email", emailsParaBuscar)
+                    .whereIn("email", emails)
                     .get()
                     .addOnSuccessListener { usuarios ->
                         val mapaUsuarios = mutableMapOf<String, User>()
@@ -61,13 +72,13 @@ class PostDAO(private val context: Context) {
                             if (user != null) mapaUsuarios[user.email] = user
                         }
 
+                        val posts = mutableListOf<Post>()
                         for (document in documentos.documents) {
                             val id = document.id
                             val imageString = document.getString("imageString") ?: ""
                             val descricao = document.getString("descricao") ?: ""
                             val emailAutor = document.getString("emailAutor") ?: ""
                             val data = document.getTimestamp("data") ?: Timestamp.now()
-
                             val usuario = mapaUsuarios[emailAutor]
                             val usernameAutor = usuario?.username ?: emailAutor
                             val fotoAutor = usuario?.fotoPerfil?.let {
@@ -79,11 +90,19 @@ class PostDAO(private val context: Context) {
 
                             posts.add(Post(id, descricao, bitmap, emailAutor, usernameAutor, fotoAutor, data))
                         }
+
+                        carregando = false
                         onSuccess(posts)
                     }
-                    .addOnFailureListener { onFailure(it.message ?: "Erro ao buscar autores") }
+                    .addOnFailureListener {
+                        carregando = false
+                        onFailure(it.message ?: "Erro ao buscar autores")
+                    }
             }
-            .addOnFailureListener { onFailure(it.message ?: "Erro ao carregar posts") }
+            .addOnFailureListener {
+                carregando = false
+                onFailure(it.message ?: "Erro ao carregar posts")
+            }
     }
 
     fun save(

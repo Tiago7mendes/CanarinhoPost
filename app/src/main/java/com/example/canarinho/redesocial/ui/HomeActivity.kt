@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +23,12 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var adapter: PostAdapter
     private val userAuth = UserAuth()
     private val posts = mutableListOf<Post>()
+
+    private val criarPostLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        carregarPrimeiraPagina()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +49,7 @@ class HomeActivity : AppCompatActivity() {
         adapter = PostAdapter(
             posts,
             emailLogado,
-            onEdit = { post, position -> abrirEdicao(post, position) },
+            onEdit = { post, _ -> abrirEdicao(post) },
             onDelete = { post, position -> deletarPost(post.id, position) },
             onComment = { post -> abrirComentarios(post) }
         )
@@ -53,7 +60,17 @@ class HomeActivity : AppCompatActivity() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 val lm = recyclerView.layoutManager as LinearLayoutManager
-                if (dy > 0 && lm.findLastVisibleItemPosition() >= adapter.itemCount - 2 && postDAO.temMaisPosts) {
+                val ultimoVisivel = lm.findLastVisibleItemPosition()
+                val total = adapter.itemCount
+
+                // Carrega mais quando chega nos últimos 2 itens
+                // e não está carregando nem esgotou os posts
+                if (dy > 0
+                    && total > 0
+                    && ultimoVisivel >= total - 2
+                    && postDAO.temMaisPosts
+                    && !postDAO.carregando
+                ) {
                     carregarMais()
                 }
             }
@@ -73,7 +90,9 @@ class HomeActivity : AppCompatActivity() {
                     binding.txtNomeCompleto.text = it.nomeCompleto
                 }
             },
-            onFailure = { msg -> Toast.makeText(this, "Erro: $msg", Toast.LENGTH_SHORT).show() }
+            onFailure = { msg ->
+                Toast.makeText(this, "Erro: $msg", Toast.LENGTH_SHORT).show()
+            }
         )
     }
 
@@ -83,16 +102,11 @@ class HomeActivity : AppCompatActivity() {
             finish()
         }
         binding.btnNovoPost.setOnClickListener {
-            startActivity(Intent(this, CreatePostActivity::class.java))
+            criarPostLauncher.launch(Intent(this, CreatePostActivity::class.java))
         }
         binding.btnCarregarFeed.setOnClickListener {
             carregarPrimeiraPagina()
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        carregarPrimeiraPagina()
     }
 
     private fun carregarPrimeiraPagina() {
@@ -105,8 +119,6 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun carregarMais() {
-        if (!postDAO.temMaisPosts) return
-        binding.progressBar.visibility = View.VISIBLE
         carregarPagina()
     }
 
@@ -115,7 +127,9 @@ class HomeActivity : AppCompatActivity() {
             onSuccess = { novosPosts ->
                 binding.progressBar.visibility = View.GONE
                 binding.recyclerView.visibility = View.VISIBLE
-                adapter.adicionarPosts(novosPosts)
+                if (novosPosts.isNotEmpty()) {
+                    adapter.adicionarPosts(novosPosts)
+                }
             },
             onFailure = { msg ->
                 binding.progressBar.visibility = View.GONE
@@ -124,19 +138,18 @@ class HomeActivity : AppCompatActivity() {
         )
     }
 
-    private fun abrirEdicao(post: Post, position: Int) {
+    private fun abrirEdicao(post: Post) {
         val intent = Intent(this, CreatePostActivity::class.java).apply {
             putExtra("POST_ID", post.id)
             putExtra("POST_DESCRICAO", post.descricao)
         }
-        startActivity(intent)
+        criarPostLauncher.launch(intent)
     }
 
     private fun abrirComentarios(post: Post) {
-        val intent = Intent(this, CommentsActivity::class.java).apply {
+        startActivity(Intent(this, CommentsActivity::class.java).apply {
             putExtra("POST_ID", post.id)
-        }
-        startActivity(intent)
+        })
     }
 
     private fun deletarPost(postId: String, position: Int) {
