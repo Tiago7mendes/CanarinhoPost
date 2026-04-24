@@ -32,7 +32,6 @@
                 android:contentDescription="Voltar"
                 app:tint="#FFDF00" />
 
-            <!-- ID adicionado aqui -->
             <TextView
                 android:id="@+id/txtTituloTela"
                 android:layout_width="0dp"
@@ -92,7 +91,7 @@
                     android:hint="Descrição do post"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     app:boxStrokeColor="#009C3B"
-                    android:layout_marginBottom="24dp">
+                    android:layout_marginBottom="16dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edtDescricao"
@@ -102,6 +101,17 @@
                         android:minLines="3"
                         android:gravity="top" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Status da localização -->
+                <TextView
+                    android:id="@+id/txtStatusLocalizacao"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📍 A localização será obtida ao publicar"
+                    android:textSize="12sp"
+                    android:textColor="#009C3B"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone" />
 
                 <ProgressBar
                     android:id="@+id/progressBar"

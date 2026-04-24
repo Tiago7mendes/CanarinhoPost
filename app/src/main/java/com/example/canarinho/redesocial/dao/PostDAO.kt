@@ -15,11 +15,8 @@ class PostDAO(private val context: Context) {
 
     var temMaisPosts: Boolean = true
         private set
-
-    // Impede que duas requisições rodem ao mesmo tempo
     var carregando: Boolean = false
         private set
-
     private var ultimoTimestamp: Timestamp? = null
 
     fun resetarPaginacao() {
@@ -32,7 +29,6 @@ class PostDAO(private val context: Context) {
         onSuccess: (List<Post>) -> Unit,
         onFailure: (String) -> Unit
     ) {
-        // Bloqueia chamadas simultâneas
         if (carregando) return
         carregando = true
 
@@ -44,7 +40,6 @@ class PostDAO(private val context: Context) {
 
         query.get()
             .addOnSuccessListener { documentos ->
-                // Se veio menos que o limite, não há mais páginas
                 temMaisPosts = documentos.size() >= limitePorPagina
 
                 if (!documentos.isEmpty) {
@@ -79,6 +74,9 @@ class PostDAO(private val context: Context) {
                             val descricao = document.getString("descricao") ?: ""
                             val emailAutor = document.getString("emailAutor") ?: ""
                             val data = document.getTimestamp("data") ?: Timestamp.now()
+                            val latitude = document.getDouble("latitude") ?: 0.0
+                            val longitude = document.getDouble("longitude") ?: 0.0
+                            val cidade = document.getString("cidade") ?: ""
                             val usuario = mapaUsuarios[emailAutor]
                             val usernameAutor = usuario?.username ?: emailAutor
                             val fotoAutor = usuario?.fotoPerfil?.let {
@@ -88,7 +86,7 @@ class PostDAO(private val context: Context) {
                                 Base64Converter.stringToBitmap(imageString)
                             } catch (e: Exception) { null }
 
-                            posts.add(Post(id, descricao, bitmap, emailAutor, usernameAutor, fotoAutor, data))
+                            posts.add(Post(id, descricao, bitmap, emailAutor, usernameAutor, fotoAutor, data, latitude, longitude, cidade))
                         }
 
                         carregando = false
@@ -109,6 +107,9 @@ class PostDAO(private val context: Context) {
         descricao: String,
         imageString: String,
         emailAutor: String,
+        latitude: Double,
+        longitude: Double,
+        cidade: String,
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
@@ -116,7 +117,10 @@ class PostDAO(private val context: Context) {
             "descricao" to descricao,
             "imageString" to imageString,
             "emailAutor" to emailAutor,
-            "data" to Timestamp.now()
+            "data" to Timestamp.now(),
+            "latitude" to latitude,
+            "longitude" to longitude,
+            "cidade" to cidade
         )
         db.collection(collection).add(post)
             .addOnSuccessListener { onSuccess() }

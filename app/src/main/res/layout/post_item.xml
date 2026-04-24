@@ -16,7 +16,7 @@
         android:orientation="vertical"
         android:background="#FFFFFF">
 
-        <!-- Header estilo Instagram: foto + username + botões autor -->
+        <!-- Header estilo Instagram -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,16 +39,33 @@
                     android:contentDescription="Foto do autor" />
             </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/txtUsernameAutor"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#002776"
-                android:text="@username" />
+                android:orientation="vertical"
+                android:layout_marginStart="10dp">
+
+                <TextView
+                    android:id="@+id/txtUsernameAutor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#002776"
+                    android:text="username" />
+
+                <!-- Cidade do post -->
+                <TextView
+                    android:id="@+id/txtCidadePost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="11sp"
+                    android:textColor="#009C3B"
+                    android:text="📍 cidade"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
             <ImageButton
                 android:id="@+id/btnEditar"
@@ -81,7 +98,7 @@
             android:scaleType="centerCrop"
             android:contentDescription="Imagem do post" />
 
-        <!-- Rodapé: descrição + botão comentar -->
+        <!-- Rodapé -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -97,14 +114,12 @@
                 android:lineSpacingMultiplier="1.4"
                 android:text="Descrição do post" />
 
-            <!-- Linha verde decorativa -->
             <View
                 android:layout_width="40dp"
                 android:layout_height="3dp"
                 android:layout_marginTop="8dp"
                 android:background="#009C3B" />
 
-            <!-- Botão comentar — visível para todos -->
             <TextView
                 android:id="@+id/btnComentar"
                 android:layout_width="wrap_content"

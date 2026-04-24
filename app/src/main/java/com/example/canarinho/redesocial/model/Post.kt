@@ -10,5 +10,8 @@ data class Post(
     val emailAutor: String = "",
     val usernameAutor: String = "",
     val fotoAutor: Bitmap? = null,
-    val data: Timestamp = Timestamp.now()
+    val data: Timestamp = Timestamp.now(),
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    val cidade: String = ""
 )

@@ -21,6 +21,7 @@ class PostAdapter(
     inner class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imgFotoAutor: ImageView = itemView.findViewById(R.id.imgFotoAutor)
         val txtUsernameAutor: TextView = itemView.findViewById(R.id.txtUsernameAutor)
+        val txtCidadePost: TextView = itemView.findViewById(R.id.txtCidadePost)
         val imgPost: ImageView = itemView.findViewById(R.id.imgPost)
         val txtDescricao: TextView = itemView.findViewById(R.id.txtDescricao)
         val btnEditar: ImageButton = itemView.findViewById(R.id.btnEditar)
@@ -37,15 +38,22 @@ class PostAdapter(
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
 
-        // Header do autor
         holder.txtUsernameAutor.text = "@${post.usernameAutor}"
+
+        // Exibe a cidade se disponível
+        if (post.cidade.isNotEmpty()) {
+            holder.txtCidadePost.text = "📍 ${post.cidade}"
+            holder.txtCidadePost.visibility = View.VISIBLE
+        } else {
+            holder.txtCidadePost.visibility = View.GONE
+        }
+
         if (post.fotoAutor != null) {
             holder.imgFotoAutor.setImageBitmap(post.fotoAutor)
         } else {
             holder.imgFotoAutor.setImageResource(R.drawable.empty_profile)
         }
 
-        // Imagem do post
         if (post.imagem != null) {
             holder.imgPost.setImageBitmap(post.imagem)
         } else {
@@ -53,11 +61,8 @@ class PostAdapter(
         }
 
         holder.txtDescricao.text = post.descricao
-
-        // Botão comentar — visível para todos
         holder.btnComentar.setOnClickListener { onComment(post) }
 
-        // Editar e deletar — só para o autor
         if (post.emailAutor == emailUsuarioLogado) {
             holder.btnEditar.visibility = View.VISIBLE
             holder.btnDeletar.visibility = View.VISIBLE
