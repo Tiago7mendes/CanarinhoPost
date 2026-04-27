@@ -2,6 +2,7 @@ package br.com.canarinho.redesocial.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,9 +45,7 @@ class ProfileActivity : AppCompatActivity() {
                         try {
                             val bitmap = Base64Converter.stringToBitmap(it.fotoPerfil)
                             binding.imgFotoPerfil.setImageBitmap(bitmap)
-                        } catch (e: Exception) {
-                            // Mantém imagem padrão
-                        }
+                        } catch (e: Exception) { }
                     }
                 }
             },
@@ -60,8 +59,19 @@ class ProfileActivity : AppCompatActivity() {
         binding.btnAlterarFoto.setOnClickListener {
             galeria.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
+
         binding.btnSalvar.setOnClickListener {
             salvarPerfil()
+        }
+
+        // Mostra/esconde o card de alteração de senha
+        binding.btnAlterarSenha.setOnClickListener {
+            val visivel = binding.cardAlterarSenha.visibility == View.VISIBLE
+            binding.cardAlterarSenha.visibility = if (visivel) View.GONE else View.VISIBLE
+        }
+
+        binding.btnConfirmarSenha.setOnClickListener {
+            alterarSenha()
         }
     }
 
@@ -80,12 +90,50 @@ class ProfileActivity : AppCompatActivity() {
 
         userDAO.save(user,
             onSuccess = {
-                Toast.makeText(this, "Perfil salvo! Bora Brasil! 💚", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Perfil salvo!", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, HomeActivity::class.java))
                 finish()
             },
             onFailure = { msg ->
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    private fun alterarSenha() {
+        val senhaAtual = binding.edtSenhaAtual.text.toString().trim()
+        val novaSenha = binding.edtNovaSenha.text.toString().trim()
+        val confirmarSenha = binding.edtConfirmarNovaSenha.text.toString().trim()
+
+        if (senhaAtual.isEmpty() || novaSenha.isEmpty() || confirmarSenha.isEmpty()) {
+            Toast.makeText(this, "Preencha todos os campos de senha", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (novaSenha != confirmarSenha) {
+            Toast.makeText(this, "As novas senhas não coincidem", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (novaSenha.length < 6) {
+            Toast.makeText(this, "A senha deve ter pelo menos 6 caracteres", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        binding.btnConfirmarSenha.isEnabled = false
+
+        userAuth.alterarSenha(senhaAtual, novaSenha,
+            onSuccess = {
+                Toast.makeText(this, "Senha alterada com sucesso!", Toast.LENGTH_SHORT).show()
+                binding.edtSenhaAtual.setText("")
+                binding.edtNovaSenha.setText("")
+                binding.edtConfirmarNovaSenha.setText("")
+                binding.cardAlterarSenha.visibility = View.GONE
+                binding.btnConfirmarSenha.isEnabled = true
+            },
+            onFailure = { msg ->
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                binding.btnConfirmarSenha.isEnabled = true
             }
         )
     }
