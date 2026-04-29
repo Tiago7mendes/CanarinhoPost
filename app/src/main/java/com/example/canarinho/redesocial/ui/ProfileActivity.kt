@@ -64,7 +64,6 @@ class ProfileActivity : AppCompatActivity() {
             salvarPerfil()
         }
 
-        // Mostra/esconde o card de alteração de senha
         binding.btnAlterarSenha.setOnClickListener {
             val visivel = binding.cardAlterarSenha.visibility == View.VISIBLE
             binding.cardAlterarSenha.visibility = if (visivel) View.GONE else View.VISIBLE
@@ -72,6 +71,16 @@ class ProfileActivity : AppCompatActivity() {
 
         binding.btnConfirmarSenha.setOnClickListener {
             alterarSenha()
+        }
+
+        // Sair da conta
+        binding.btnSair.setOnClickListener {
+            userAuth.logout()
+            val intent = Intent(this, LoginActivity::class.java).apply {
+                // Limpa a pilha de activities — não volta para home com o botão voltar
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
         }
     }
 
@@ -90,8 +99,7 @@ class ProfileActivity : AppCompatActivity() {
 
         userDAO.save(user,
             onSuccess = {
-                Toast.makeText(this, "Perfil salvo!", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, HomeActivity::class.java))
+                Toast.makeText(this, "Perfil salvo! 💚", Toast.LENGTH_SHORT).show()
                 finish()
             },
             onFailure = { msg ->
@@ -109,12 +117,10 @@ class ProfileActivity : AppCompatActivity() {
             Toast.makeText(this, "Preencha todos os campos de senha", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (novaSenha != confirmarSenha) {
             Toast.makeText(this, "As novas senhas não coincidem", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (novaSenha.length < 6) {
             Toast.makeText(this, "A senha deve ter pelo menos 6 caracteres", Toast.LENGTH_SHORT).show()
             return

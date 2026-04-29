@@ -3,6 +3,7 @@ package br.com.canarinho.redesocial.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +24,9 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var adapter: PostAdapter
     private val userAuth = UserAuth()
     private val posts = mutableListOf<Post>()
+
+    // Guarda a cidade buscada — null significa sem filtro
+    private var cidadeFiltro: String? = null
 
     private val criarPostLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -62,9 +66,6 @@ class HomeActivity : AppCompatActivity() {
                 val lm = recyclerView.layoutManager as LinearLayoutManager
                 val ultimoVisivel = lm.findLastVisibleItemPosition()
                 val total = adapter.itemCount
-
-                // Carrega mais quando chega nos últimos 2 itens
-                // e não está carregando nem esgotou os posts
                 if (dy > 0
                     && total > 0
                     && ultimoVisivel >= total - 2
@@ -97,16 +98,57 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        binding.btnEditarPerfil.setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
-            finish()
+        // Foto de perfil abre ProfileActivity
+        binding.cardFotoPerfil.setOnClickListener {
+            criarPostLauncher.launch(Intent(this, ProfileActivity::class.java))
         }
+
+        // Logo canarinho atualiza o feed
+        binding.btnCarregarFeed.setOnClickListener {
+            limparBusca()
+            carregarPrimeiraPagina()
+        }
+
+        // FAB novo post
         binding.btnNovoPost.setOnClickListener {
             criarPostLauncher.launch(Intent(this, CreatePostActivity::class.java))
         }
-        binding.btnCarregarFeed.setOnClickListener {
+
+        // Buscar por cidade
+        binding.btnBuscar.setOnClickListener {
+            executarBusca()
+        }
+
+        // Buscar ao pressionar "Search" no teclado
+        binding.edtBuscarCidade.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                executarBusca()
+                true
+            } else false
+        }
+
+        // Limpar busca
+        binding.btnLimparBusca.setOnClickListener {
+            limparBusca()
             carregarPrimeiraPagina()
         }
+    }
+
+    private fun executarBusca() {
+        val cidade = binding.edtBuscarCidade.text.toString().trim()
+        if (cidade.isEmpty()) {
+            Toast.makeText(this, "Digite uma cidade para buscar", Toast.LENGTH_SHORT).show()
+            return
+        }
+        cidadeFiltro = cidade
+        binding.btnLimparBusca.visibility = View.VISIBLE
+        carregarPrimeiraPagina()
+    }
+
+    private fun limparBusca() {
+        cidadeFiltro = null
+        binding.edtBuscarCidade.setText("")
+        binding.btnLimparBusca.visibility = View.GONE
     }
 
     private fun carregarPrimeiraPagina() {
@@ -124,11 +166,17 @@ class HomeActivity : AppCompatActivity() {
 
     private fun carregarPagina() {
         postDAO.getPaginado(
+            cidade = cidadeFiltro,
             onSuccess = { novosPosts ->
                 binding.progressBar.visibility = View.GONE
                 binding.recyclerView.visibility = View.VISIBLE
                 if (novosPosts.isNotEmpty()) {
                     adapter.adicionarPosts(novosPosts)
+                } else if (posts.isEmpty()) {
+                    val msg = if (cidadeFiltro != null)
+                        "Nenhum post encontrado em \"$cidadeFiltro\""
+                    else "Nenhum post encontrado"
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
                 }
             },
             onFailure = { msg ->
@@ -139,11 +187,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun abrirEdicao(post: Post) {
-        val intent = Intent(this, CreatePostActivity::class.java).apply {
-            putExtra("POST_ID", post.id)
-            putExtra("POST_DESCRICAO", post.descricao)
-        }
-        criarPostLauncher.launch(intent)
+        criarPostLauncher.launch(
+            Intent(this, CreatePostActivity::class.java).apply {
+                putExtra("POST_ID", post.id)
+                putExtra("POST_DESCRICAO", post.descricao)
+            }
+        )
     }
 
     private fun abrirComentarios(post: Post) {

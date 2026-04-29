@@ -26,15 +26,24 @@ class PostDAO(private val context: Context) {
     }
 
     fun getPaginado(
+        cidade: String? = null,
         onSuccess: (List<Post>) -> Unit,
         onFailure: (String) -> Unit
     ) {
         if (carregando) return
         carregando = true
 
-        var query = db.collection(collection)
-            .orderBy("data", Query.Direction.DESCENDING)
-            .limit(limitePorPagina)
+        // Monta a query — com ou sem filtro de cidade
+        var query: Query = if (cidade != null) {
+            db.collection(collection)
+                .whereEqualTo("cidade", cidade)
+                .orderBy("data", Query.Direction.DESCENDING)
+                .limit(limitePorPagina)
+        } else {
+            db.collection(collection)
+                .orderBy("data", Query.Direction.DESCENDING)
+                .limit(limitePorPagina)
+        }
 
         ultimoTimestamp?.let { query = query.startAfter(it) }
 
@@ -76,7 +85,7 @@ class PostDAO(private val context: Context) {
                             val data = document.getTimestamp("data") ?: Timestamp.now()
                             val latitude = document.getDouble("latitude") ?: 0.0
                             val longitude = document.getDouble("longitude") ?: 0.0
-                            val cidade = document.getString("cidade") ?: ""
+                            val cidadePost = document.getString("cidade") ?: ""
                             val usuario = mapaUsuarios[emailAutor]
                             val usernameAutor = usuario?.username ?: emailAutor
                             val fotoAutor = usuario?.fotoPerfil?.let {
@@ -86,7 +95,7 @@ class PostDAO(private val context: Context) {
                                 Base64Converter.stringToBitmap(imageString)
                             } catch (e: Exception) { null }
 
-                            posts.add(Post(id, descricao, bitmap, emailAutor, usernameAutor, fotoAutor, data, latitude, longitude, cidade))
+                            posts.add(Post(id, descricao, bitmap, emailAutor, usernameAutor, fotoAutor, data, latitude, longitude, cidadePost))
                         }
 
                         carregando = false
