@@ -44,6 +44,22 @@ O **Canarin** é uma rede social mobile desenvolvida em Android com Kotlin, cria
 
 ---
 
+## 🎬 Demonstração em Vídeo
+
+<div align="center">
+  <img src="app/src/main/res/drawable/video.gif" width="300px" alt="Demonstração do CanarinApp" />
+  <p><em>GIF demonstrando as principais funcionalidades do app.</em></p>
+</div>
+
+---
+
+### 📺 Apresentação Técnica
+Para uma explicação detalhada sobre a arquitetura e o código do projeto, assista ao vídeo abaixo:
+
+[![Assista ao vídeo no YouTube](https://www.youtube.com/watch?v=VlidEiATQ5E.jpg)](https://www.youtube.com/watch?v=VlidEiATQ5E)
+
+---
+
 ## 🛠️ Tecnologias Utilizadas
 
 | Tecnologia | Uso |
